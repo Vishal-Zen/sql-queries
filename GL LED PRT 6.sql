@@ -1,0 +1,25 @@
+SELECT
+    CASE 
+        WHEN COMM.TBankCommInfEntryType IN (2050, 2054) THEN 'TD'
+        ELSE 'TC'
+    END AS JOURNAL,    
+    ACCT.GLAcctID AS GLACCTID,
+    ACCT.GLAccountAcctName AS GLACCOUNTACCTNAME,
+    ACCT.GLAccountNickName AS GLACCOUNTNICKNAME,
+    ACCT.GLAccountStatus AS GLACCOUNTSTATUS,
+    ACCT.GLAccountCategory AS GLACCOUNTCATEGORY,
+    COMM.TBankCommInfDate AS ENTRYDATE,
+    CASE
+        WHEN COMM.TBankCommInfEntryType IN (2050, 2054) THEN COMM.TBankCommInfAmount
+        ELSE 0
+    END AS DEBITAMOUNT,
+    CASE
+        WHEN COMM.TBankCommInfEntryType IN (2050, 2054) THEN 0
+        ELSE COMM.TBankCommInfAmount
+    END AS CREDITAMOUNT,
+    COMM.TBankCommInfPaidTo AS EXPLANATION
+FROM PCLAW_TBComm COMM
+JOIN PCLAW_TBAcctI TB ON COMM.TBankCommInfAccountID = TB.TBankAcctInfBankAccountID
+JOIN PCLAW_GLAcct ACCT ON TB.TBankAcctInfGLAccountID = ACCT.GLAcctID
+WHERE COMM.TBankCommInfStatus = 0
+  AND COMM.TBankCommInfEntryType NOT IN (1552, 1553, 2501)
