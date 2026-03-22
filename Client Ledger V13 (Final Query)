@@ -1,0 +1,131 @@
+SELECT
+    DISTINCT Q.*
+FROM
+    (
+        SELECT
+            '1' AS SNo,
+            TRD.TranIndexDate,
+            COALESCE(
+                GBC1.GBankCommInfPaidTo,
+                GBC2.GBankCommInfPaidTo,
+                GBC3.GBankCommInfPaidTo
+            ) AS GBankCommInfPaidTo,
+            '' AS bld,
+            GBA.GBankAllocInfAllocID,
+            CASE
+                WHEN COALESCE(
+                    GBC1.GBankCommInfEntryType,
+                    GBC2.GBankCommInfEntryType,
+                    GBC3.GBankCommInfEntryType
+                ) = 1300 THEN GBA.GBankAllocInfAmount
+                ELSE 0
+            END AS Recpt,
+            CASE
+                WHEN COALESCE(
+                    GBC1.GBankCommInfEntryType,
+                    GBC2.GBankCommInfEntryType,
+                    GBC3.GBankCommInfEntryType
+                ) <> 1300 THEN GBA.GBankAllocInfAmount
+                ELSE 0
+            END AS Disbs,
+            '' AS Balance,
+            CASE
+                WHEN GBA.GBankAllocInfInvNumber = 0 THEN ''
+                ELSE GBA.GBankAllocInfInvNumber
+            END AS GBankAllocInfInvNumber,
+            GBA.GBankAllocInfExplanation,
+            COALESCE(
+                GBC1.GBankCommInfCheck,
+                GBC2.GBankCommInfCheck,
+                GBC3.GBankCommInfCheck
+            ) AS GBankCommInfCheck,
+            0 AS Rcpt,
+            0 AS Disb,
+            Mat.MatterInfoMatterNum,
+            Mat.MatterInfoFileDesc,
+            l.LawInfNickName
+        FROM
+            PCLAWDB_32130.dbo.GBAlloc GBA
+            INNER JOIN PCLAWDB_32130.dbo.MattInf Mat ON Mat.MatterID = GBA.MatterID
+            INNER JOIN PCLAWDB_32130.dbo.LawInf l ON Mat.MatterInfoRespLwyr = l.LawyerID
+            LEFT JOIN PCLAWDB_32130.dbo.TranIDX TRD ON TRD.TranIndexSequenceID = GBA.GBankAllocInfAllocID
+            LEFT JOIN PCLAWDB_32130.dbo.GBComm GBC1 ON GBC1.GBankCommInfID = TRD.TranIndexSequenceID
+            LEFT JOIN PCLAWDB_32130.dbo.GBRcptA GBR ON GBR.GBankARRcptAllocInvID = GBA.GBankAllocInfCheckID
+            LEFT JOIN PCLAWDB_32130.dbo.GBComm GBC2 ON GBC2.GBankCommInfID = GBR.GBankARRcptAllocCheckID
+            LEFT JOIN PCLAWDB_32130.dbo.GBComm GBC3 ON GBC3.GBankCommInfID = GBA.GBankAllocInfCheckID
+        WHERE
+            GBA.GBankAllocInfStatus = 0
+        UNION
+        SELECT
+            '2' AS SNo,
+            TDR.TranIndexDate,
+            TBC.TBankCommInfPaidTo AS GBankCommInfPaidTo,
+            '' AS bld,
+            TBA.TBankAllocInfAllocID,
+            CASE
+                WHEN TBA.TBankAllocInfoEntryType = '2050' THEN TBA.TBankAllocInfoAmount
+                ELSE 0
+            END AS Recpt,
+            CASE
+                WHEN TBA.TBankAllocInfoEntryType = '2049' THEN TBA.TBankAllocInfoAmount
+                ELSE 0
+            END AS Disbs,
+            '' AS Balance,
+            CASE
+                WHEN TBA.TBankAllocInfInvNumber = 0 THEN ''
+                ELSE TBA.TBankAllocInfInvNumber
+            END AS GBankAllocInfInvNumber,
+            TBA.TBankAllocInfExplanation,
+            TBC.TBankCommInfCheck AS GBankCommInfCheck,
+            0 AS Rcpt,
+            0 AS Disb,
+            Mat.MatterInfoMatterNum,
+            Mat.MatterInfoFileDesc,
+            l.LawInfNickName
+        FROM
+            PCLAWDB_32130.dbo.TBAlloc TBA
+            LEFT JOIN PCLAWDB_32130.dbo.TBComm TBC ON TBC.TBankCommInfSequenceID = TBA.TBankAllocInfoCheckID
+            INNER JOIN PCLAWDB_32130.dbo.MattInf Mat ON Mat.MatterID = TBA.MatterID
+            INNER JOIN PCLAWDB_32130.dbo.LawInf l ON Mat.MatterInfoRespLwyr = l.LawyerID
+            INNER JOIN PCLAWDB_32130.dbo.TranIDX TDR ON TBA.TBankAllocInfAllocID = TDR.TranIndexSequenceID
+        WHERE
+            TBankCommInfStatus = 0
+        UNION
+        SELECT
+            '3' AS SNo,
+            Timeent.TimeEntryDate AS TranIndexDate,
+            '' AS GBankCommInfPaidTo,
+            '' AS bld,
+            Timeent.EntryID AS GBankAllocInfAllocID,
+            0 AS Recpt,
+            0 AS Disbs,
+            Timeent.TimeEntryAmount as Amt,
+            CASE
+                WHEN Timeent.TimeEntryInvNumber = 0 THEN ''
+                ELSE Timeent.TimeEntryInvNumber
+            END AS InvNUm,
+            Timeent.TimeEntryExplanation AS GBankAllocInfExplanation,
+            '' AS GBankCommInfCheck,
+            0 AS Rcpt,
+            0 AS Disb,
+            Mattinf.MatterInfoMatterNum,
+            Mattinf.MatterInfoFileDesc,
+            Lawinf.LawInfNickName
+        FROM
+            PCLAWDB_32130.dbo.Timeent
+            Left JOIN PCLAWDB_32130.dbo.Mattinf ON Timeent.MatterID = Mattinf.MatterID
+            INNER JOIN PCLAWDB_32130.dbo.Lawinf ON Timeent.LawyerID = Lawinf.LawyerID
+            INNER JOIN PCLAWDB_32130.dbo.Tranidx ON Timeent.EntryID = Tranidx.TranIndexSequenceID
+            Left JOIN PCLAWDB_32130.dbo.ActCode ON Timeent.TimeEntryActivity = ActCode.ActivityCodesID
+            LEft JOIN PCLAWDB_32130.dbo.TaskList ON Timeent.AreaOfLawID = TaskList.TaskListID
+        WHERE
+            Timeent.TimeEntryStatus = 0
+            AND Mattinf.MatterInfoStatus = 0
+            AND Tranidx.TranIndexEntryType <> 201
+    ) Q
+
+WHERE
+Q.MatterInfoMatterNum = '356245'
+
+order by
+TranIndexDate;
