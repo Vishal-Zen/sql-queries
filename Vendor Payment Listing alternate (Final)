@@ -1,0 +1,30 @@
+SELECT
+    V.APVendorListNickName,
+    V.APVendorListSortName,
+    I.APInvoiceInvNumr,
+    I.APInvoiceTotPaid,
+    I.APInvoiceExpl,
+    C.GBankCommInfDate,
+    C.GBankCommInfCheck,
+    a.GLAcctID,
+    a.GLAccountNickName,
+    a.GLAccountAcctName,
+    RA.GBankARRcptAllocAmount,
+    C.GBankCommInfID,
+    V.APVendorListID1099,
+    Ad.AddressInfoAddrLine1,
+    Ad.AddressInfoCity,
+    Ad.AddressInfoProv,
+    Ad.AddressInfoCode
+FROM
+    [PCLAWDB_32130].[dbo].APInv I
+    JOIN [PCLAWDB_32130].[dbo].GBRcptA RA ON I.APInvoiceID = RA.GBankARRcptAllocInvID
+    JOIN [PCLAWDB_32130].[dbo].GBComm C ON RA.GBankARRcptAllocCheckID = C.GBankCommInfID
+    JOIN [PCLAWDB_32130].[dbo].APVendLi V ON V.APVendorListID = I.APInvoiceVendorID
+    JOIN [PCLAWDB_32130].[dbo].GBAlloc Alloc on I.APInvoiceID = Alloc.GBankAllocInfCheckID
+    JOIN [PCLAWDB_32130].[dbo].GLAcct a on Alloc.GBankAllocInfGLID = a.GLAcctID
+    JOIN [PCLAWDB_32130].[dbo].AddrInf Ad on ad.AddressInfoCompany = V.APVendorListSortName
+
+Where
+    GBankARRcptAllocAmount not in (0) AND APVendorListNickName = '12597'
+    and APInvoiceEntryDate Between 20220101 and 20221231
