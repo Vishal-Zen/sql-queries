@@ -1,0 +1,14 @@
+SELECT 
+Inv.APInvoiceEntryDate,
+Inv.APInvoiceID,
+vendor.APVendorListNickName,
+vendor.APVendorListSortName,
+Inv.APInvoiceInvNumr,
+Inv.APInvoiceDueDate,
+Inv.APInvoiceExpl,
+Inv.APInvoiceTotPaid,
+Inv.APInvoiceTotBasePST,
+vendor.APVendorListTotDisc
+ 
+FROM [PCLAWDB_32130].[dbo].[APInv] as Inv
+left join [PCLAWDB_32130].[dbo].[APVendLi] as vendor on Inv.APInvoiceVendorID = vendor.APVendorListID
