@@ -1,0 +1,37 @@
+SELECT DISTINCT
+    C.GBankCommInfDate            AS [Date],
+    C.GBankCommInfPaidTo          AS [Paid To/Received From],
+    C.GBankCommInfAccountID       AS [Acct#],
+    C.GBankCommInfCheck           AS [Che/Rec#],
+    C.GBankCommInfID              AS [Entry #],
+    A.GBankAllocInfCheckID        AS [Allocation Check ID],
+    A.GBankAllocInfExplanation    AS [Allocation Explanation],
+    M.MatterInfoMatterNum         AS [Matter Number],
+    M.MatterInfoFileDesc          AS [Matter Description],
+    GLA.GLAccountNickName         AS [GL Account Nickname],
+    GLA.GLAccountAcctName         AS [GL Account Name],
+      A.GBankAllocInfEntryType        as TEst_type,
+      GLA.GLAccountType                    as Accn_type,
+      A.GBankAllocInfAmount               as Che_ck,
+    --  RA.GBankARRcptAllocEntryType        as GBankARRcptAllocEntryType,
+    --RA.GBankARRcptAllocAmount     AS [Check],
+    C.GBankCommInfAmount          AS [Entry Total],
+    A.tbl_PK_id
+FROM 
+    [PCLAWDB_32130].[dbo].[GBComm] AS C
+
+    INNER JOIN [PCLAWDB_32130].[dbo].[GBAlloc] AS A
+        ON C.GBankCommInfID = A.GBankAllocInfCheckID
+
+    LEFT JOIN [PCLAWDB_32130].[dbo].[MattInf] AS M
+       ON A.MatterID = M.MatterID
+
+    INNER JOIN [PCLAWDB_32130].[dbo].[GLAcct] AS GLA
+        ON A.GBankAllocInfGLID = GLA.GLAcctID
+
+    --INNER JOIN [PCLAWDB_32130].[dbo].[GBRcptA] AS RA
+    --    ON C.GBankCommInfID = RA.GBankARRcptAllocCheckID
+
+--WHERE
+    --C.GBankCommInfID IN (1986201) and 
+--C.GBankCommInfDate Between 20240101 and 20240103
