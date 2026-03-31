@@ -28,7 +28,7 @@ FROM
                 ) <> 1300 THEN GBA.GBankAllocInfAmount
                 ELSE 0
             END AS Disbs,
-            '' AS Balance,
+            '' AS Fees,
             CASE
                 WHEN GBA.GBankAllocInfInvNumber = 0 THEN ''
                 ELSE GBA.GBankAllocInfInvNumber
@@ -62,6 +62,15 @@ FROM
             TBC.TBankCommInfPaidTo AS GBankCommInfPaidTo,
             '' AS bld,
             TBA.TBankAllocInfAllocID,
+            0 AS Rcpt,
+            0 AS Disb,
+            '' AS Fees,
+            CASE
+                WHEN TBA.TBankAllocInfInvNumber = 0 THEN ''
+                ELSE TBA.TBankAllocInfInvNumber
+            END AS GBankAllocInfInvNumber,
+            TBA.TBankAllocInfExplanation,
+            TBC.TBankCommInfCheck AS GBankCommInfCheck,
             CASE
                 WHEN TBA.TBankAllocInfoEntryType = '2050' THEN TBA.TBankAllocInfoAmount
                 ELSE 0
@@ -70,15 +79,6 @@ FROM
                 WHEN TBA.TBankAllocInfoEntryType = '2049' THEN TBA.TBankAllocInfoAmount
                 ELSE 0
             END AS Disbs,
-            '' AS Balance,
-            CASE
-                WHEN TBA.TBankAllocInfInvNumber = 0 THEN ''
-                ELSE TBA.TBankAllocInfInvNumber
-            END AS GBankAllocInfInvNumber,
-            TBA.TBankAllocInfExplanation,
-            TBC.TBankCommInfCheck AS GBankCommInfCheck,
-            0 AS Rcpt,
-            0 AS Disb,
             Mat.MatterInfoMatterNum,
             Mat.MatterInfoFileDesc,
             l.LawInfNickName
@@ -104,7 +104,7 @@ FROM
                 WHEN Timeent.TimeEntryInvNumber = 0 THEN ''
                 ELSE Timeent.TimeEntryInvNumber
             END AS InvNUm,
-            Timeent.TimeEntryExplanation AS GBankAllocInfExplanation,
+            ActCode.ActivityCodesName AS GBankAllocInfExplanation,
             '' AS GBankCommInfCheck,
             0 AS Rcpt,
             0 AS Disb,
@@ -122,10 +122,13 @@ FROM
             Timeent.TimeEntryStatus = 0
             AND Mattinf.MatterInfoStatus = 0
             AND Tranidx.TranIndexEntryType <> 201
+            AND ActCode.ActivityCodesID IS NOT NULL
     ) Q
 
 WHERE
-Q.MatterInfoMatterNum = '356245'
+ --Q.MatterInfoMatterNum = '1440530' and 
+Q.TranIndexDate >= 20240101
 
 order by
+GBankAllocInfAllocID,
 TranIndexDate;
