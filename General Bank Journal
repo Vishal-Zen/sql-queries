@@ -32,6 +32,14 @@ FROM
     --INNER JOIN [PCLAWDB_32130].[dbo].[GBRcptA] AS RA
     --    ON C.GBankCommInfID = RA.GBankARRcptAllocCheckID
 
---WHERE
+WHERE
     --C.GBankCommInfID IN (1986201) and 
---C.GBankCommInfDate Between 20240101 and 20240103
+GBankAllocInfStatus In ('0')
+and
+GBankAllocInfEntryType NOT IN ('1600')
+and
+C.GBankCommInfDate Between 20241201 and 20241231
+and
+GBankCommInfAccountID  = '4'
+and 
+GBankCommInfCheck <> ''
