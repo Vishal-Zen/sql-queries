@@ -1,36 +1,46 @@
 SELECT
-TBC.TBankCommInfDate as Date,
-TBC.TBankCommInfPaidTo as Paidto,
-TBC.TBankCommInfAccountID as Accnt,
-TBC.TBankCommInfCheck as Check_Rec,
-TBC.TBankCommInfSequenceID as Entrynum,
-TBA.TBankAllocInfExplanation as Explnation,
-TBA.MatterID as Matter,
-M.MatterInfoFileDesc as Client,
-TBC.TBankCommInfEntryType as TypefromTBComm,
-TBA.TBankAllocInfoEntryType as TypefromTBAlloc,
-Case when TBankAllocInfoEntryType <> '2050' then TBankAllocInfoAmount else 0 end as TBACheque,
-Case when TBankAllocInfoEntryType = '2050' then TBankAllocInfoAmount else 0 end as TBARecepit,
-TBC.TBankCommInfAmount as TBCEntrytotal
+    TBC.TBankCommInfDate        AS Date,
+    TBC.TBankCommInfPaidTo      AS Paidto,
+    TBC.TBankCommInfAccountID   AS Accnt,
+    TBC.TBankCommInfCheck       AS Check_Rec,
+    TBC.TBankCommInfSequenceID  AS Entrynum,
+    TBA.TBankAllocInfExplanation AS Explnation,
+    TBA.MatterID                AS Matter,
+    M.MatterInfoFileDesc        AS Client,
+    TBC.TBankCommInfEntryType   AS TypefromTBComm,
+    TBA.TBankAllocInfoEntryType AS TypefromTBAlloc,
 
+    CASE 
+        WHEN TBA.TBankAllocInfoEntryType <> '2050' 
+        THEN TBA.TBankAllocInfoAmount 
+        ELSE 0 
+    END AS TBACheque,
 
+    CASE 
+        WHEN TBA.TBankAllocInfoEntryType = '2050' 
+        THEN TBA.TBankAllocInfoAmount 
+        ELSE 0 
+    END AS TBARecepit,
+
+    TBC.TBankCommInfAmount      AS TBCEntrytotal
 
 FROM 
-PCLAWDB_32130.dbo.TBComm TBC
+    PCLAWDB_32130.dbo.TBComm AS TBC
 
-Left join PCLAWDB_32130.dbo.TBAlloc TBA
-on TBC.TBankCommInfSequenceID = TBA.TBankAllocInfoCheckID
+LEFT JOIN 
+    PCLAWDB_32130.dbo.TBAlloc AS TBA
+    ON TBC.TBankCommInfSequenceID = TBA.TBankAllocInfoCheckID
 
-Left join  [PCLAWDB_32130].[dbo].[MattInf] AS M
-       ON TBA.MatterID = M.MatterID
+LEFT JOIN  
+    PCLAWDB_32130.dbo.MattInf AS M
+    ON TBA.MatterID = M.MatterID
 
-Where
-TBankCommInfSequenceID IN ('1863949','1863951')
-and
-TBankCommInfDate between 20230701 and 20231231
-and 
-TBankCommInfAccountID ='4'
-and
-TBankCommInfCheck <> ''
-order by
-TBankCommInfDate
+WHERE
+    -- TBC.TBankCommInfSequenceID IN ('1863949','1863951')
+    TBC.TBankCommInfDate BETWEEN 20230701 AND 20231231
+    AND TBC.TBankCommInfAccountID = '4'
+    AND TBC.TBankCommInfCheck <> ''
+    AND TBA.TBankAllocInfoStatus = '0'
+
+ORDER BY
+    TBC.TBankCommInfDate;
