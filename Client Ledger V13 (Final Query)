@@ -39,6 +39,7 @@ FROM
                 GBC2.GBankCommInfCheck,
                 GBC3.GBankCommInfCheck
             ) AS GBankCommInfCheck,
+            '' AS Account,
             0 AS Rcpt,
             0 AS Disb,
             Mat.MatterInfoMatterNum,
@@ -71,6 +72,7 @@ FROM
             END AS GBankAllocInfInvNumber,
             TBA.TBankAllocInfExplanation,
             TBC.TBankCommInfCheck AS GBankCommInfCheck,
+            TBC.TBankCommInfAccountID AS Account,
             CASE
                 WHEN TBA.TBankAllocInfoEntryType = '2050' THEN TBA.TBankAllocInfoAmount
                 ELSE 0
@@ -106,6 +108,7 @@ FROM
             END AS InvNUm,
             ActCode.ActivityCodesName AS GBankAllocInfExplanation,
             '' AS GBankCommInfCheck,
+            '' AS Account,
             0 AS Rcpt,
             0 AS Disb,
             Mattinf.MatterInfoMatterNum,
@@ -126,7 +129,7 @@ FROM
     ) Q
 
 WHERE
- --Q.MatterInfoMatterNum = '1440530' and 
+ Q.MatterInfoMatterNum = '342709' and 
 Q.TranIndexDate >= 20240101
 
 order by
