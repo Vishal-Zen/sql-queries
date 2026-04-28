@@ -1,17 +1,17 @@
 SELECT
-    Vendor.APVendorListNickName     AS Vendor#,
-    BankComm.GBankCommInfPaidTo     AS Vendor,
+    Vendor.APVendorListNickName     AS VENDORID,
+    BankComm.GBankCommInfPaidTo     AS VENDORNAME,
     Invoice.APInvoiceEntryDate      AS EntryDate,
     Invoice.APInvoiceDueDate        AS DueDate,
     Invoice.APInvoiceInvNumr        AS ReferenceNumber,
     BankComm.GBankCommInfAmount     AS Amount,
     Invoice.APInvoiceExpl           AS Expl,
     BankComm.GBankCommInfDate       AS PaymentDate,
-    BankComm.GBankCommInfCheck      AS Che_ck,
+    BankComm.GBankCommInfCheck      AS Che,
     ReceiptAlloc.GBankARRcptAllocAmount AS Paid,
     Case when BankComm.GBankCommInfAccountID = 1 then '1' else '9' end as Accnt,
-    GLAccount.GLAccountNickName,
-    GLAccount.GLAccountAcctName
+    GLAccount.GLAccountNickName as GLACCOUNT,
+    GLAccount.GLAccountAcctName as GLACCOUNTNAME
     
     --BankComm.*
 	--ReceiptAlloc.GBankARRcptAllocPRID%256
