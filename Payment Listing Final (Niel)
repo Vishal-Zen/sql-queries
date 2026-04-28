@@ -1,0 +1,48 @@
+SELECT
+    Vendor.APVendorListNickName     AS Vendor#,
+    BankComm.GBankCommInfPaidTo     AS Vendor,
+    Invoice.APInvoiceEntryDate      AS EntryDate,
+    Invoice.APInvoiceDueDate        AS DueDate,
+    Invoice.APInvoiceInvNumr        AS ReferenceNumber,
+    BankComm.GBankCommInfAmount     AS Amount,
+    Invoice.APInvoiceExpl           AS Expl,
+    BankComm.GBankCommInfDate       AS PaymentDate,
+    BankComm.GBankCommInfCheck      AS Che_ck,
+    ReceiptAlloc.GBankARRcptAllocAmount AS Paid,
+    Case when BankComm.GBankCommInfAccountID = 1 then '1' else '9' end as Accnt,
+    GLAccount.GLAccountNickName,
+    GLAccount.GLAccountAcctName
+    
+    --BankComm.*
+	--ReceiptAlloc.GBankARRcptAllocPRID%256
+
+FROM 
+    [PCLAWDB_32130].[dbo].GBRcptA AS ReceiptAlloc
+	
+
+RIGHT JOIN 
+    [PCLAWDB_32130].[dbo].GBComm AS BankComm
+    ON BankComm.GBankCommInfID = ReceiptAlloc.GBankARRcptAllocCheckID
+
+INNER JOIN 
+    [PCLAWDB_32130].[dbo].APInv AS Invoice
+    ON Invoice.APInvoiceID = ReceiptAlloc.GBankARRcptAllocInvID
+
+INNER JOIN 
+    [PCLAWDB_32130].[dbo].GLAcct AS GLAccount
+	ON  (ReceiptAlloc.GBankARRcptAllocPRID/256 = GLAccount.GLAcctID and ReceiptAlloc.GBankARRcptAllocPRID>256) OR (ReceiptAlloc.GBankARRcptAllocPRID%256 = GLAccount.GLAcctID and ReceiptAlloc.GBankARRcptAllocPRID<256)
+
+INNER JOIN 
+    [PCLAWDB_32130].[dbo].APVendLi AS Vendor
+    ON Invoice.APInvoiceVendorID = Vendor.APVendorListID
+
+WHERE 
+    ReceiptAlloc.GBankARRcptAllocStatus=0
+    --and BankComm.GBankCommInfDate < 2020101
+	and invoice.APInvoiceStatus=0
+	and bankcomm.GBankCommInfStatus=0
+    --and GBankARRcptAllocAmount <> 0
+    --and APVendorListNickName  IN ('2036')
+
+ ORDER BY 
+ BankComm.GBankCommInfPaidTo
