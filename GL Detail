@@ -1,5 +1,6 @@
 SELECT 
-T.*
+*
+--*
 FROM
     (
         select
@@ -164,38 +165,51 @@ FROM
             and alloc.MatterID <> 0 --5
         union
         all -- Expense Recoveries into the 1210 Account (summary of all CER types)
-        select
-            '5' as Sno,
-            'GBAlloc' as TableName,
-            'CER' as Journal,
-            MAX(a.GLAcctID) as GLAcctID,
-            MAX(a.GLAccountAcctName) as GLAccountAcctName,
-            MAX(a.GLAccountNickName) as GLAccountNickName,
-            MAX(a.GLAccountStatus) as GLAccountStatus,
-            MAX(a.GLAccountCategory) as GLAccountCategory,
-            MAX((GBankCommInfDate)) as GBankCommInfDate,
-            MAX(GBankCommInfEntryType) as EntryType,
-            case when SUM(convert(money, GBankAllocInfAmount)) >= 0
+select
+    '5' as Sno,
+    'GBAlloc' as TableName,
+    'CER' as Journal,
+    MAX(a.GLAcctID) as GLAcctID,
+    MAX(a.GLAccountAcctName) as GLAccountAcctName,
+    MAX(a.GLAccountNickName) as GLAccountNickName,
+    MAX(a.GLAccountStatus) as GLAccountStatus,
+    MAX(a.GLAccountCategory) as GLAccountCategory,
+
+    MAX(GBankCommInfDate) as GLDate,
+
+    MAX(GBankCommInfEntryType) as EntryType,
+
+   case when SUM(convert(money, GBankAllocInfAmount)) >= 0
             then SUM(convert(money, GBankAllocInfAmount)) else 0 end as DebitAmount,
             case when SUM(convert(money, GBankAllocInfAmount)) < 0
             then ABS(SUM(convert(money, GBankAllocInfAmount))) else 0 end as CreditAmount,
-            'Total of Recoveries' as comment,
-            '' as GBankCommInfPaidTo,
-            '' as ReferenceNumber,
-            '' as EntryNumber,
-            SUM(GBankAllocInfAmount) as amount
-        from
-            [PCLAWDB_32130].[dbo].GBAlloc Alloc
-            join [PCLAWDB_32130].[dbo].GLAcct a on a.GLAccountNickName = '5010'
-            join [PCLAWDB_32130].[dbo].GBComm Comm on Alloc.GBankAllocInfCheckID = Comm.GBankCommInfID
-            left join [PCLAWDB_32130].[dbo].TranIDX t on Alloc.GBankAllocInfAllocID = t.TranIndexSequenceID
-        where
-            TranIndexStatus = 0 --and t.MatterID <> 0
+
+    'Total of Recoveries' as comment,
+    '' as GBankCommInfPaidTo,
+    '' as ReferenceNumber,
+    '' as EntryNumber,
+    SUM(GBankAllocInfAmount) as amount
+
+from
+    [PCLAWDB_32130].[dbo].GBAlloc Alloc
+
+    join [PCLAWDB_32130].[dbo].GLAcct a 
+        on a.GLAccountNickName = '5010'
+
+    join [PCLAWDB_32130].[dbo].GBComm Comm 
+        on Alloc.GBankAllocInfCheckID = Comm.GBankCommInfID
+
+    left join [PCLAWDB_32130].[dbo].TranIDX t 
+        on Alloc.GBankAllocInfAllocID = t.TranIndexSequenceID
+        and t.TranIndexStatus = 0 
+
+where
+    TranIndexStatus = 0 --and t.MatterID <> 0
             and GBankAllocInfEntryType in (1400, 1600,1899)
             and alloc.MatterID <> 0 --6
-        GROUP BY
-          SUBSTRING(CAST(GBankCommInfDate AS VARCHAR), 1, 4)
-          --SUBSTRING(CAST(GBankCommInfDate AS VARCHAR), 5, 2)
+
+GROUP BY
+    SUBSTRING(CAST(GBankCommInfDate AS VARCHAR), 1, 6)
         union
         all -- Trust Details
         select
@@ -358,8 +372,11 @@ END AS CreditAmount,
             and m.MatterID <> 0 --12
    
     ) AS T--group by t.Journal
-where T.GLDate > 20081231  
+
+where T.GLDate  between 20210101 and 20211231
+--and T.Sno = '5'
 --and GLAccountNickName='1030'
 --AND T.GLAccountType IN ('6000','7000')
 --GROUP BY T.GLAccountAcctName,T.GLAccountNickName
---ORDER BY GLAccountNickName
+--Group By T.Sno
+--ORDER BY T.GLDate
