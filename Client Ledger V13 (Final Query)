@@ -1,10 +1,21 @@
+DECLARE @EDate DATE = '2026-03-31';
+
 SELECT
     DISTINCT Q.*
 FROM
     (
         SELECT
             '1' AS SNo,
-            TRD.TranIndexDate,
+            CASE
+                WHEN TRD.TranIndexEntryType in (1600, 1650, 1899)
+                THEN 'SoftCost'
+
+		        WHEN TRD.TranIndexEntryType in (1400, 6500) 
+                THEN 'HardCost'
+
+                ELSE 'Receipt'
+            END as Type,
+            cast(cast(TRD.TranIndexDate as varchar) as date) as Tran_Date,
             COALESCE(
                 GBC1.GBankCommInfPaidTo,
                 GBC2.GBankCommInfPaidTo,
@@ -59,7 +70,16 @@ FROM
         UNION
         SELECT
             '2' AS SNo,
-            TDR.TranIndexDate,
+             CASE
+                WHEN TDR.TranIndexEntryType in (1600, 1650, 1899)
+                THEN 'SoftCost'
+
+		        WHEN TDR.TranIndexEntryType in (1400, 6500) 
+                THEN 'HardCost'
+                
+                ELSE 'Receipt'
+            END as Type,
+            cast(cast(TDR.TranIndexDate as varchar) as date) as Tran_Date,
             TBC.TBankCommInfPaidTo AS GBankCommInfPaidTo,
             '' AS bld,
             TBA.TBankAllocInfAllocID,
@@ -95,7 +115,16 @@ FROM
         UNION
         SELECT
             '3' AS SNo,
-            Timeent.TimeEntryDate AS TranIndexDate,
+             CASE
+                WHEN Tranidx.TranIndexEntryType in (1600, 1650, 1899)
+                THEN 'SoftCost'
+
+		        WHEN Tranidx.TranIndexEntryType in (1400, 6500) 
+                THEN 'HardCost'
+                
+                ELSE 'Receipt'
+            END as Type,
+            cast(cast(Timeent.TimeEntryDate as varchar) as date) as Tran_Date,
             '' AS GBankCommInfPaidTo,
             '' AS bld,
             Timeent.EntryID AS GBankAllocInfAllocID,
@@ -129,9 +158,9 @@ FROM
     ) Q
 
 WHERE
- Q.MatterInfoMatterNum = '342709' and 
-Q.TranIndexDate >= 20240101
+Q.MatterInfoMatterNum = '170981' and 
+Q.Tran_Date <= @EDate
 
 order by
-GBankAllocInfAllocID,
-TranIndexDate;
+Q.GBankAllocInfAllocID,
+Q.Tran_Date;
