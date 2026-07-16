@@ -14,7 +14,17 @@ FROM
                 THEN 'HardCost'
 
                 ELSE 'Receipt'
-            END as Type,
+            END as Che_Rec_Type,
+            'Unandled' as Trust_Type,
+            CASE
+                WHEN TRD.TranIndexEntryType =2
+                THEN 'Time'
+
+                WHEN TRD.TranIndexEntryType in (3, 201, 998, 999) 
+                THEN 'Fee'
+
+                ELSE 'Unhandled'
+            END as Time_Fee_Type,
             cast(cast(TRD.TranIndexDate as varchar) as date) as Tran_Date,
             COALESCE(
                 GBC1.GBankCommInfPaidTo,
@@ -78,7 +88,23 @@ FROM
                 THEN 'HardCost'
                 
                 ELSE 'Receipt'
-            END as Type,
+            END as Che_Rec_Type,
+            CASE 
+                WHEN TBA.TBankAllocInfoEntryType in (2050, 2054) 
+                THEN 'Receipt'
+		        WHEN TDR.TranIndexEntryType in (2049, 2052, 2053) 
+                THEN 'Check'
+		        ELSE 'Unandled'
+		    END as Trust_Type,
+            CASE
+                WHEN TDR.TranIndexEntryType =2
+                THEN 'Time'
+
+                WHEN TDR.TranIndexEntryType in (3, 201, 998, 999) 
+                THEN 'Fee'
+
+                ELSE 'Unhandled'
+            END as Time_Fee_Type,
             cast(cast(TDR.TranIndexDate as varchar) as date) as Tran_Date,
             TBC.TBankCommInfPaidTo AS GBankCommInfPaidTo,
             '' AS bld,
@@ -123,7 +149,17 @@ FROM
                 THEN 'HardCost'
                 
                 ELSE 'Receipt'
-            END as Type,
+            END as Che_Rec_Type,
+            'Unandled' as Trust_Type,
+            CASE
+                WHEN Tranidx.TranIndexEntryType =2
+                THEN 'Time'
+
+                WHEN Tranidx.TranIndexEntryType in (3, 201, 998, 999) 
+                THEN 'Fee'
+
+                ELSE 'Unhandled'
+            END as Time_Fee_Type,
             cast(cast(Timeent.TimeEntryDate as varchar) as date) as Tran_Date,
             '' AS GBankCommInfPaidTo,
             '' AS bld,
@@ -158,7 +194,7 @@ FROM
     ) Q
 
 WHERE
-Q.MatterInfoMatterNum = '170981' and 
+ Q.MatterInfoMatterNum = '198230' and 
 Q.Tran_Date <= @EDate
 
 order by
