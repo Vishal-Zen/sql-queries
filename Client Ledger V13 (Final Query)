@@ -1,4 +1,4 @@
-DECLARE @EDate DATE = '2026-03-31';
+DECLARE @EDate DATE = '2022-12-31';
 
 SELECT
     DISTINCT Q.*
@@ -25,7 +25,7 @@ FROM
 
                 ELSE 'Unhandled'
             END as Time_Fee_Type,
-            cast(cast(TRD.TranIndexDate as varchar) as date) as Tran_Date,
+            TRY_CONVERT(date, CAST(TRD.TranIndexDate AS CHAR(8)), 112) AS Tran_Date,
             COALESCE(
                 GBC1.GBankCommInfPaidTo,
                 GBC2.GBankCommInfPaidTo,
@@ -105,7 +105,7 @@ FROM
 
                 ELSE 'Unhandled'
             END as Time_Fee_Type,
-            cast(cast(TDR.TranIndexDate as varchar) as date) as Tran_Date,
+            TRY_CONVERT(date, CAST(TDR.TranIndexDate AS CHAR(8)), 112) AS Tran_Date,
             TBC.TBankCommInfPaidTo AS GBankCommInfPaidTo,
             '' AS bld,
             TBA.TBankAllocInfAllocID,
@@ -160,7 +160,7 @@ FROM
 
                 ELSE 'Unhandled'
             END as Time_Fee_Type,
-            cast(cast(Timeent.TimeEntryDate as varchar) as date) as Tran_Date,
+            TRY_CONVERT(date, CAST(Timeent.TimeEntryDate AS CHAR(8)), 112) AS Tran_Date,
             '' AS GBankCommInfPaidTo,
             '' AS bld,
             Timeent.EntryID AS GBankAllocInfAllocID,
@@ -194,8 +194,8 @@ FROM
     ) Q
 
 WHERE
- Q.MatterInfoMatterNum = '198230' and 
-Q.Tran_Date <= @EDate
+ --Q.MatterInfoMatterNum = '198230' and 
+Q.Tran_Date > @EDate
 
 order by
 Q.GBankAllocInfAllocID,
